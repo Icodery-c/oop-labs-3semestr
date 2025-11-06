@@ -150,7 +150,6 @@ void MainWindow::createMenu()
     QAction *selectAllAction = new QAction("Выделить все", this);
     selectAllAction->setShortcut(QKeySequence::SelectAll);
     connect(selectAllAction, &QAction::triggered, this, [this]() {
-        // Здесь можно добавить логику выделения всех фигур
         statusBar()->showMessage("Выделение всех фигур - в разработке");
     });
     editMenu->addAction(selectAllAction);
@@ -171,20 +170,20 @@ void MainWindow::createMenu()
     // Меню Справка
     QMenu *helpMenu = menuBar()->addMenu("Справка");
 
+    // УДАЛЯЕМ ДУБЛИРОВАНИЕ - оставляем только один aboutAction
     QAction *aboutAction = new QAction("О программе", this);
-    QAction *aboutAction = new QAction("О программе", this);
-connect(aboutAction, &QAction::triggered, this, []() {
-    QMessageBox::about(nullptr, "О программе",
-        "Визуальный редактор\n"
-        "Лабораторная работа 4\n\n"
-        "Управление:\n"
-        "• ЛКМ - создать/выделить фигуру\n"
-        "• Ctrl+ЛКМ - множественное выделение\n"
-        "• Стрелки - перемещение\n"
-        "• Ctrl+± - изменение размера\n"
-        "• Delete - удаление выделенных\n"
-        "• S,C,R,T,L - выбор инструментов");
-});
+    connect(aboutAction, &QAction::triggered, this, []() {
+        QMessageBox::about(nullptr, "О программе",
+            "Визуальный редактор\n"
+            "Лабораторная работа 4\n\n"
+            "Управление:\n"
+            "• ЛКМ - создать/выделить фигуру\n"
+            "• Ctrl+ЛКМ - множественное выделение\n"
+            "• Стрелки - перемещение\n"
+            "• Ctrl+± - изменение размера\n"
+            "• Delete - удаление выделенных\n"
+            "• S,C,R,T,L - выбор инструментов");
+    });
     helpMenu->addAction(aboutAction);
 }
 
