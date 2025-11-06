@@ -124,6 +124,8 @@ void MainWindow::createToolBar()
     m_toolBar->addAction(m_clearAction);
 }
 
+
+//создание меню
 void MainWindow::createMenu()
 {
     // Меню Файл
