@@ -1,5 +1,6 @@
 #include "triangle.h"
 #include <QPolygon>
+#include <QDebug>
 
 Triangle::Triangle(const QPoint& position, int size, const QColor& color)
     : BaseShape(position, color)

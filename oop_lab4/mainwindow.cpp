@@ -8,6 +8,7 @@
 #include <QMessageBox>
 #include <QIcon>
 #include <QKeySequence>
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)

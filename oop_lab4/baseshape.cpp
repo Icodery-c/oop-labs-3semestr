@@ -1,6 +1,7 @@
 #include "baseshape.h"
 #include <QDebug>
 
+
 BaseShape::BaseShape(const QPoint& position, const QColor& color)
     : m_position(position)
     , m_color(color)

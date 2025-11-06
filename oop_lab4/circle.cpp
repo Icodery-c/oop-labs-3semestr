@@ -1,5 +1,6 @@
 #include "circle.h"
 #include <cmath>
+#include <QDebug>
 
 Circle::Circle(const QPoint& center, int radius, const QColor& color)
     : BaseShape(center, color)

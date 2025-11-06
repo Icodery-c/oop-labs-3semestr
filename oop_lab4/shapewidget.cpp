@@ -5,6 +5,7 @@
 #include "circle.h"
 #include "rectangle.h"
 #include "triangle.h"
+#include <QDebug>
 
 ShapeWidget::ShapeWidget(QWidget *parent)
     : QWidget(parent)

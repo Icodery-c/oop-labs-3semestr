@@ -1,4 +1,5 @@
 #include "rectangle.h"
+#include <QDebug>
 
 Rectangle::Rectangle(const QPoint& position, const QSize& size, const QColor& color)
     : BaseShape(position, color)
