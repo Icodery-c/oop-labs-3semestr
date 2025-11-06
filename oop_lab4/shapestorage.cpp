@@ -2,6 +2,11 @@
 #include <algorithm>
 #include <QDebug>
 
+#include "circle.h"
+#include "rectangle.h"
+#include "triangle.h"
+#include "line.h"
+
 ShapeStorage::ShapeStorage()
 {
 }
@@ -100,6 +105,7 @@ void ShapeStorage::resizeSelected(int dw, int dh)
 {
     for (auto& shape : m_shapes) {
         if (shape->isSelected()) {
+            // Динамическое приведение типа для вызова специфичных методов
             if (auto* circle = dynamic_cast<Circle*>(shape.get())) {
                 circle->setRadius(circle->getRadius() + dw);
             }
