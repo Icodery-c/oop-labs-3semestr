@@ -24,7 +24,7 @@ public:
     virtual QString getName() const = 0;
 
     // Общие методы (реализация в базовом классе)
-    void move(int dx, int dy);
+    virtual void move(int dx, int dy);
     void setPosition(const QPoint& newPosition);
     void setColor(const QColor& color);
     void setBorderColor(const QColor& color);

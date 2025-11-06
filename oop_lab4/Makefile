@@ -437,7 +437,10 @@ compiler_clean: compiler_moc_predefs_clean compiler_moc_header_clean
 
 ####### Compile
 
-main.o: main.cpp 
+main.o: main.cpp mainwindow.h \
+		shapewidget.h \
+		shapestorage.h \
+		baseshape.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
 
 mainwindow.o: mainwindow.cpp mainwindow.h \

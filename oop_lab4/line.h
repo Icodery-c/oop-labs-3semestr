@@ -20,7 +20,7 @@ public:
     QPoint getEndPoint() const { return m_endPoint; }
 
     // Переопределяем move для перемещения всей линии
-    void move(int dx, int dy) override;
+    void move(int dx, int dy) override;  // ← ОСТАВЛЯЕМ override (если move виртуальный в BaseShape)
 
 private:
     bool isPointNearLine(const QPoint& point) const;
