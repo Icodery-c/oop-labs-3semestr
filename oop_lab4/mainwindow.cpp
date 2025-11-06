@@ -88,23 +88,13 @@ void MainWindow::createToolBar()
         m_shapeWidget->setCurrentTool(ShapeWidget::Tool::Line);
     });
 
-    // Добавляем в группу инструментов
-    toolGroup->addAction(m_lineAction);
-
-    // Добавляем на панель инструментов (после треугольника)
-    m_toolBar->addAction(m_selectAction);
-    m_toolBar->addAction(m_circleAction);
-    m_toolBar->addAction(m_rectangleAction);
-    m_toolBar->addAction(m_triangleAction);
-    m_toolBar->addAction(m_lineAction);  // ← Новая кнопка
-    m_toolBar->addSeparator();
-
     // Группа для эксклюзивного выбора инструментов
-    QActionGroup *toolGroup = new QActionGroup(this);
+    QActionGroup *toolGroup = new QActionGroup(this);  // ← ОБЪЯВЛЯЕМ ПЕРЕМЕННУЮ
     toolGroup->addAction(m_selectAction);
     toolGroup->addAction(m_circleAction);
     toolGroup->addAction(m_rectangleAction);
     toolGroup->addAction(m_triangleAction);
+    toolGroup->addAction(m_lineAction);  // ← ДОБАВЛЯЕМ ЛИНИЮ В ГРУППУ
     toolGroup->setExclusive(true);
 
     // Действия управления
@@ -126,6 +116,7 @@ void MainWindow::createToolBar()
     m_toolBar->addAction(m_circleAction);
     m_toolBar->addAction(m_rectangleAction);
     m_toolBar->addAction(m_triangleAction);
+    m_toolBar->addAction(m_lineAction);  // ← ДОБАВЛЯЕМ КНОПКУ ЛИНИИ
     m_toolBar->addSeparator();
     m_toolBar->addAction(m_deleteAction);
     m_toolBar->addAction(m_colorAction);
@@ -181,18 +172,19 @@ void MainWindow::createMenu()
     QMenu *helpMenu = menuBar()->addMenu("Справка");
 
     QAction *aboutAction = new QAction("О программе", this);
-    connect(aboutAction, &QAction::triggered, this, []() {
-        QMessageBox::about(nullptr, "О программе",
-            "Визуальный редактор\n"
-            "Лабораторная работа 4\n\n"
-            "Управление:\n"
-            "• ЛКМ - создать/выделить фигуру\n"
-            "• Ctrl+ЛКМ - множественное выделение\n"
-            "• Стрелки - перемещение\n"
-            "• Ctrl+± - изменение размера\n"
-            "• Delete - удаление выделенных\n"
-            "• S,C,R,T - выбор инструментов");
-    });
+    QAction *aboutAction = new QAction("О программе", this);
+connect(aboutAction, &QAction::triggered, this, []() {
+    QMessageBox::about(nullptr, "О программе",
+        "Визуальный редактор\n"
+        "Лабораторная работа 4\n\n"
+        "Управление:\n"
+        "• ЛКМ - создать/выделить фигуру\n"
+        "• Ctrl+ЛКМ - множественное выделение\n"
+        "• Стрелки - перемещение\n"
+        "• Ctrl+± - изменение размера\n"
+        "• Delete - удаление выделенных\n"
+        "• S,C,R,T,L - выбор инструментов");
+});
     helpMenu->addAction(aboutAction);
 }
 

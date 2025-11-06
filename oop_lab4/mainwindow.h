@@ -20,7 +20,7 @@ private:
     QAction *m_circleAction;
     QAction *m_rectangleAction;
     QAction *m_triangleAction;
-    QAction *m_lineAction; 
+    QAction *m_lineAction;  // ← ДОБАВЛЯЕМ ОБЪЯВЛЕНИЕ
     QAction *m_deleteAction;
     QAction *m_colorAction;
     QAction *m_clearAction;

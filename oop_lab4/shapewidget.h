@@ -9,7 +9,6 @@ class ShapeWidget : public QWidget
 
 private:
     ShapeStorage m_storage;
-    enum class Tool { Select, Circle, Rectangle, Triangle, Line };
     Tool m_currentTool;
 
 
@@ -17,6 +16,9 @@ public:
     explicit ShapeWidget(QWidget *parent = nullptr);
 
     ShapeStorage& getStorage() { return m_storage; }
+
+    enum class Tool { Select, Circle, Rectangle, Triangle, Line };
+
 
     // Методы для управления инструментами
     void setCurrentTool(Tool tool);
