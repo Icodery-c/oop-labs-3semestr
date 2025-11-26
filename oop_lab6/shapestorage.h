@@ -1,42 +1,49 @@
 #pragma once
 
+
 #include "baseshape.h"
 #include <vector>
 #include <memory>
+
+// Предварительное объявление
+class ShapeFactory;
 
 class ShapeStorage
 {
 private:
     std::vector<std::unique_ptr<BaseShape>> m_shapes;
+    ShapeFactory* m_factory;  // ← СЫРОЙ УКАЗАТЕЛЬ вместо unique_ptr
 
 public:
     ShapeStorage();
+    ~ShapeStorage();  // ← ДОБАВЛЯЕМ ДЕСТРУКТОР
 
-    // Добавление фигур
     void addShape(std::unique_ptr<BaseShape> shape);
-
-    // Удаление
     void removeSelectedShapes();
     void clear();
 
-    // Доступ
     int getCount() const;
     BaseShape* getShape(int index);
     const BaseShape* getShape(int index) const;
 
-    // Работа с выделением
     void selectShapesAt(const QPoint& point, bool ctrlPressed = false);
     void deselectAll();
     bool hasSelectedShapes() const;
 
-    // Манипуляции с выделенными фигурами
     void moveSelected(int dx, int dy, const QRect& bounds);
     void resizeSelected(int dw, int dh, const QRect& bounds);
     void changeSelectedColor(const QColor& color);
 
-    // Отрисовка всех фигур
     void drawAll(QPainter& painter) const;
 
-private:
-    bool isShapeAtTop(const BaseShape* shape, const QPoint& point) const;
+    // Группировка
+    void groupSelected();
+    void ungroupSelected();
+
+    // Сериализация
+    bool saveToFile(const QString& filename);
+    bool loadFromFile(const QString& filename);
+
+    // Фабрика
+    void setFactory(ShapeFactory* factory);  // ← СЫРОЙ УКАЗАТЕЛЬ
 };

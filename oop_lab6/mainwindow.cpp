@@ -9,10 +9,16 @@
 #include <QIcon>
 #include <QKeySequence>
 #include <QDebug>
+#include <QFileDialog>
+#include "group.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
+
+  qDebug() << "Current directory:" << QDir::currentPath();
+  qDebug() << "Home directory:" << QDir::homePath();
+  
     // Создаем центральный виджет
     m_shapeWidget = new ShapeWidget(this);
     setCentralWidget(m_shapeWidget);
@@ -30,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
             });
 
     // Настраиваем окно
-    setWindowTitle("Визуальный редактор - Лабораторная работа 4");
+    setWindowTitle("Визуальный редактор - Лабораторная работа 6");
     resize(800, 600);
 
     // Статус бар
@@ -90,12 +96,12 @@ void MainWindow::createToolBar()
     });
 
     // Группа для эксклюзивного выбора инструментов
-    QActionGroup *toolGroup = new QActionGroup(this);  // ← ОБЪЯВЛЯЕМ ПЕРЕМЕННУЮ
+    QActionGroup *toolGroup = new QActionGroup(this);
     toolGroup->addAction(m_selectAction);
     toolGroup->addAction(m_circleAction);
     toolGroup->addAction(m_rectangleAction);
     toolGroup->addAction(m_triangleAction);
-    toolGroup->addAction(m_lineAction);  // ← ДОБАВЛЯЕМ ЛИНИЮ В ГРУППУ
+    toolGroup->addAction(m_lineAction);
     toolGroup->setExclusive(true);
 
     // Действия управления
@@ -112,21 +118,39 @@ void MainWindow::createToolBar()
     m_clearAction = new QAction("Очистить", this);
     connect(m_clearAction, &QAction::triggered, this, &MainWindow::onClearCanvas);
 
+    // Действия группировки
+    m_groupAction = new QAction("Группировать", this);
+    m_groupAction->setShortcut(QKeySequence("Ctrl+G"));
+    connect(m_groupAction, &QAction::triggered, this, [this]() {
+        m_shapeWidget->getStorage().groupSelected();
+        m_shapeWidget->update();
+        onSelectionChanged();
+    });
+
+    m_ungroupAction = new QAction("Разгруппировать", this);
+    m_ungroupAction->setShortcut(QKeySequence("Ctrl+U"));
+    connect(m_ungroupAction, &QAction::triggered, this, [this]() {
+        m_shapeWidget->getStorage().ungroupSelected();
+        m_shapeWidget->update();
+        onSelectionChanged();
+    });
+
     // Добавляем действия на панель инструментов
     m_toolBar->addAction(m_selectAction);
     m_toolBar->addAction(m_circleAction);
     m_toolBar->addAction(m_rectangleAction);
     m_toolBar->addAction(m_triangleAction);
-    m_toolBar->addAction(m_lineAction);  // ← ДОБАВЛЯЕМ КНОПКУ ЛИНИИ
+    m_toolBar->addAction(m_lineAction);
     m_toolBar->addSeparator();
     m_toolBar->addAction(m_deleteAction);
     m_toolBar->addAction(m_colorAction);
     m_toolBar->addSeparator();
+    m_toolBar->addAction(m_groupAction);
+    m_toolBar->addAction(m_ungroupAction);
+    m_toolBar->addSeparator();
     m_toolBar->addAction(m_clearAction);
 }
 
-
-//создание меню
 void MainWindow::createMenu()
 {
     // Меню Файл
@@ -136,11 +160,54 @@ void MainWindow::createMenu()
     newAction->setShortcut(QKeySequence::New);
     connect(newAction, &QAction::triggered, this, &MainWindow::onClearCanvas);
 
+    QAction *saveAction = new QAction("Сохранить", this);
+saveAction->setShortcut(QKeySequence::Save);
+connect(saveAction, &QAction::triggered, this, [this]() {
+    QString filename = QFileDialog::getSaveFileName(this,
+        "Сохранить проект",
+        "my_project.shp",
+        "Shape Files (*.shp);;All Files (*)");
+
+    if (!filename.isEmpty()) {
+        // Автоматически добавляем расширение .shp если его нет
+        if (!filename.endsWith(".shp", Qt::CaseInsensitive)) {
+            filename += ".shp";
+        }
+
+        if (m_shapeWidget->getStorage().saveToFile(filename)) {
+            statusBar()->showMessage("Проект сохранен: " + filename);
+        } else {
+            QMessageBox::warning(this, "Ошибка", "Не удалось сохранить проект");
+        }
+    }
+});
+
+    QAction *loadAction = new QAction("Загрузить", this);
+    loadAction->setShortcut(QKeySequence::Open);
+    connect(loadAction, &QAction::triggered, this, [this]() {
+      QString filename = QFileDialog::getOpenFileName(this,
+          "Загрузить проект",
+          "",
+          "Shape Files (*.shp);;All Files (*)");
+                  if (!filename.isEmpty()) {
+            if (m_shapeWidget->getStorage().loadFromFile(filename)) {
+                m_shapeWidget->update();
+                statusBar()->showMessage("Проект загружен: " + filename);
+                emit m_shapeWidget->shapesCountChanged(m_shapeWidget->getStorage().getCount());
+                onSelectionChanged();
+            } else {
+                QMessageBox::warning(this, "Ошибка", "Не удалось загрузить проект");
+            }
+        }
+    });
+
     QAction *exitAction = new QAction("Выход", this);
     exitAction->setShortcut(QKeySequence::Quit);
     connect(exitAction, &QAction::triggered, this, &QMainWindow::close);
 
     fileMenu->addAction(newAction);
+    fileMenu->addAction(saveAction);
+    fileMenu->addAction(loadAction);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAction);
 
@@ -148,12 +215,20 @@ void MainWindow::createMenu()
     QMenu *editMenu = menuBar()->addMenu("Правка");
     editMenu->addAction(m_deleteAction);
     editMenu->addAction(m_colorAction);
+    editMenu->addAction(m_groupAction);
+    editMenu->addAction(m_ungroupAction);
     editMenu->addSeparator();
 
     QAction *selectAllAction = new QAction("Выделить все", this);
     selectAllAction->setShortcut(QKeySequence::SelectAll);
     connect(selectAllAction, &QAction::triggered, this, [this]() {
-        statusBar()->showMessage("Выделение всех фигур - в разработке");
+        // Временная реализация - выделяем все фигуры
+        for (int i = 0; i < m_shapeWidget->getStorage().getCount(); ++i) {
+            m_shapeWidget->getStorage().getShape(i)->setSelected(true);
+        }
+        m_shapeWidget->update();
+        onSelectionChanged();
+        statusBar()->showMessage("Все фигуры выделены");
     });
     editMenu->addAction(selectAllAction);
 
@@ -173,19 +248,20 @@ void MainWindow::createMenu()
     // Меню Справка
     QMenu *helpMenu = menuBar()->addMenu("Справка");
 
-    // УДАЛЯЕМ ДУБЛИРОВАНИЕ - оставляем только один aboutAction
     QAction *aboutAction = new QAction("О программе", this);
     connect(aboutAction, &QAction::triggered, this, []() {
         QMessageBox::about(nullptr, "О программе",
             "Визуальный редактор\n"
-            "Лабораторная работа 4\n\n"
+            "Лабораторная работа 6\n\n"
             "Управление:\n"
             "• ЛКМ - создать/выделить фигуру\n"
             "• Ctrl+ЛКМ - множественное выделение\n"
             "• Стрелки - перемещение\n"
             "• Ctrl+± - изменение размера\n"
             "• Delete - удаление выделенных\n"
-            "• S,C,R,T,L - выбор инструментов");
+            "• S,C,R,T,L - выбор инструментов\n"
+            "• Ctrl+G - группировка\n"
+            "• Ctrl+U - разгруппировка");
     });
     helpMenu->addAction(aboutAction);
 }
@@ -234,6 +310,25 @@ void MainWindow::updateActions()
 {
     bool hasSelection = m_shapeWidget->getStorage().hasSelectedShapes();
 
+    // Подсчет выделенных фигур для группировки
+    int selectedCount = 0;
+    bool canUngroup = false;
+
+    for (int i = 0; i < m_shapeWidget->getStorage().getCount(); ++i) {
+        if (m_shapeWidget->getStorage().getShape(i)->isSelected()) {
+            selectedCount++;
+
+            // Проверяем, является ли выделенная фигура группой
+            if (m_shapeWidget->getStorage().getShape(i)->getType() == "Group") {
+                canUngroup = true;
+            }
+        }
+    }
+
+    bool canGroup = selectedCount >= 2;
+
     m_deleteAction->setEnabled(hasSelection);
     m_colorAction->setEnabled(hasSelection);
+    m_groupAction->setEnabled(canGroup);
+    m_ungroupAction->setEnabled(canUngroup);
 }

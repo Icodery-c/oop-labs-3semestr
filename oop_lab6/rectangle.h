@@ -17,6 +17,11 @@ public:
     QRect getBoundsAfterResize(int dw, int dh) const override;
     QString getName() const override { return "Rectangle"; }
 
+    // Сериализация
+    void save(QTextStream& stream) const override;
+    void load(QTextStream& stream) override;
+    QString getType() const override { return "Rectangle"; }
+
     void setSize(const QSize& size, const QRect& bounds);
     QSize getSize() const { return m_size; }
 

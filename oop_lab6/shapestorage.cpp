@@ -1,14 +1,29 @@
 #include "shapestorage.h"
-#include <algorithm>
-#include <QDebug>
-
+#include "shapefactory.h"
 #include "circle.h"
 #include "rectangle.h"
 #include "triangle.h"
 #include "line.h"
+#include "group.h"
+#include <algorithm>
+#include <QDebug>
+#include <QFile>
+#include <QTextStream>
+#include <QFileInfo>
 
 ShapeStorage::ShapeStorage()
+    : m_factory(nullptr)  // инициализируем nullptr
 {
+}
+
+ShapeStorage::~ShapeStorage()
+{
+    // Не удаляем фабрику, так как она управляется извне
+}
+
+void ShapeStorage::setFactory(ShapeFactory* factory)
+{
+    m_factory = factory;
 }
 
 void ShapeStorage::addShape(std::unique_ptr<BaseShape> shape)
@@ -61,6 +76,10 @@ const BaseShape* ShapeStorage::getShape(int index) const
 
 void ShapeStorage::selectShapesAt(const QPoint& point, bool ctrlPressed)
 {
+    if (!ctrlPressed) {
+        deselectAll();
+    }
+
     // Находим все фигуры под курсором
     std::vector<int> shapesUnderCursor;
     for (int i = 0; i < static_cast<int>(m_shapes.size()); ++i) {
@@ -92,11 +111,6 @@ void ShapeStorage::selectShapesAt(const QPoint& point, bool ctrlPressed)
 
     // Логируем результат
     qDebug() << "Selected" << shapesUnderCursor.size() << "shapes under cursor";
-    for (int index : shapesUnderCursor) {
-        if (m_shapes[index]->isSelected()) {
-            qDebug() << " -" << m_shapes[index]->getName() << "at index" << index;
-        }
-    }
 }
 
 void ShapeStorage::deselectAll()
@@ -161,16 +175,146 @@ void ShapeStorage::drawAll(QPainter& painter) const
     }
 }
 
-bool ShapeStorage::isShapeAtTop(const BaseShape* shape, const QPoint& point) const
+// void ShapeStorage::setFactory(std::unique_ptr<ShapeFactory> factory)
+// {
+//     m_factory = std::move(factory);
+// }
+
+bool ShapeStorage::saveToFile(const QString& filename)
 {
-    // Проверяем, что нет других фигур поверх этой в данной точке
-    for (const auto& other : m_shapes) {
-        if (other.get() == shape) {
-            break; // Доходим до текущей фигуры - она верхняя
-        }
-        if (other->contains(point)) {
-            return false; // Есть фигура поверх
+    QFile file(filename);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qDebug() << "Cannot open file for writing:" << filename;
+        qDebug() << "Error:" << file.errorString();
+        return false;
+    }
+
+    QTextStream stream(&file);
+
+    // Сохраняем количество объектов
+    stream << m_shapes.size() << "\n";
+
+    // Сохраняем каждый объект
+    for (const auto& shape : m_shapes) {
+        shape->save(stream);
+    }
+
+    file.close();
+    qDebug() << "Saved" << m_shapes.size() << "shapes to" << filename;
+
+    // Проверим, что файл действительно создался
+    QFileInfo fileInfo(filename);
+    qDebug() << "File exists:" << fileInfo.exists();
+    qDebug() << "File size:" << fileInfo.size() << "bytes";
+
+    return true;
+}
+
+bool ShapeStorage::loadFromFile(const QString& filename)
+{
+    if (!m_factory) {
+        qDebug() << "Factory not set!";
+        return false;
+    }
+
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Cannot open file for reading:" << filename;
+        qDebug() << "Error:" << file.errorString();
+        return false;
+    }
+
+    // Проверим размер файла
+    QFileInfo fileInfo(filename);
+    qDebug() << "Loading file:" << filename;
+    qDebug() << "File size:" << fileInfo.size() << "bytes";
+
+    QTextStream stream(&file);
+
+    // Читаем количество объектов
+    int count;
+    stream >> count;
+    qDebug() << "Objects count in file:" << count;
+
+    // Очищаем текущие фигуры
+    m_shapes.clear();
+
+    // Загружаем каждый объект
+    int loadedCount = 0;
+    for (int i = 0; i < count; ++i) {
+        auto shape = m_factory->loadShape(stream);
+        if (shape) {
+            m_shapes.push_back(std::move(shape));
+            loadedCount++;
+            qDebug() << "Loaded shape" << i << "type:" << m_shapes.back()->getType();
+        } else {
+            qDebug() << "Failed to load shape" << i;
         }
     }
-    return true;
+
+    file.close();
+    qDebug() << "Successfully loaded" << loadedCount << "shapes from" << filename;
+    return loadedCount > 0;
+}
+
+void ShapeStorage::groupSelected()
+{
+    // Находим все выделенные фигуры
+    std::vector<std::unique_ptr<BaseShape>> selectedShapes;
+
+    auto it = std::remove_if(m_shapes.begin(), m_shapes.end(),
+        [&selectedShapes](std::unique_ptr<BaseShape>& shape) {
+            if (shape->isSelected()) {
+                selectedShapes.push_back(std::move(shape));
+                return true;
+            }
+            return false;
+        });
+
+    m_shapes.erase(it, m_shapes.end());
+
+    if (selectedShapes.size() > 1) {
+        // Создаем группу и добавляем в нее выделенные фигуры
+        auto group = std::make_unique<Group>();
+        for (auto& shape : selectedShapes) {
+            group->addShape(std::move(shape));
+        }
+
+        // Добавляем группу обратно в хранилище
+        m_shapes.push_back(std::move(group));
+        qDebug() << "Created group with" << selectedShapes.size() << "shapes";
+    } else if (selectedShapes.size() == 1) {
+        // Если выделена только одна фигура - возвращаем ее обратно
+        m_shapes.push_back(std::move(selectedShapes[0]));
+        qDebug() << "Need at least 2 shapes to create a group";
+    }
+}
+
+void ShapeStorage::ungroupSelected()
+{
+    std::vector<std::unique_ptr<BaseShape>> shapesToAdd;
+
+    auto it = std::remove_if(m_shapes.begin(), m_shapes.end(),
+        [&shapesToAdd](std::unique_ptr<BaseShape>& shape) {
+            if (shape->isSelected()) {
+                if (auto* group = dynamic_cast<Group*>(shape.get())) {
+                    // Извлекаем все фигуры из группы
+                    for (int i = 0; i < group->getChildCount(); ++i) {
+                        //auto child = group->getChild(i);
+                        // Создаем копию фигуры (в реальной реализации нужен метод clone())
+                        // shapesToAdd.push_back(child->clone());
+                    }
+                    qDebug() << "Ungrouped group with" << group->getChildCount() << "children";
+                    return true;
+                }
+            }
+            return false;
+        });
+
+    m_shapes.erase(it, m_shapes.end());
+
+    // Добавляем извлеченные фигуры обратно в хранилище
+    for (auto& shape : shapesToAdd) {
+        m_shapes.push_back(std::move(shape));
+    }
 }

@@ -69,3 +69,18 @@ QPoint Circle::getTopLeft() const
 {
     return QPoint(m_position.x() - m_radius, m_position.y() - m_radius);
 }
+
+// Сериализация круга
+void Circle::save(QTextStream& stream) const
+{
+    stream << getType() << " ";
+    saveCommonProperties(stream);
+    stream << m_radius << "\n";
+}
+
+// Десериализация круга
+void Circle::load(QTextStream& stream)
+{
+    loadCommonProperties(stream);
+    stream >> m_radius;
+}

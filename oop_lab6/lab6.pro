@@ -1,7 +1,7 @@
 QT += core gui widgets
 CONFIG += c++17
 TEMPLATE = app
-TARGET = lab4
+TARGET = lab6
 
 SOURCES += \
     main.cpp \
@@ -10,9 +10,11 @@ SOURCES += \
     circle.cpp \
     rectangle.cpp \
     triangle.cpp \
+    group.cpp \
     line.cpp \
     shapestorage.cpp \
-    shapewidget.cpp
+    shapewidget.cpp \
+    shapefactory.cpp  # ← ДОБАВЛЯЕМ
 
 HEADERS += \
     mainwindow.h \
@@ -20,6 +22,8 @@ HEADERS += \
     circle.h \
     rectangle.h \
     triangle.h \
+    group.h \
     line.h \
     shapestorage.h \
-    shapewidget.h
+    shapewidget.h \
+    shapefactory.h  # ← ДОБАВЛЯЕМ

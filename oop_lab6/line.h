@@ -17,10 +17,14 @@ public:
     QRect getBoundsAfterResize(int dw, int dh) const override;
     QString getName() const override { return "Line"; }
 
+    // Сериализация
+    void save(QTextStream& stream) const override;
+    void load(QTextStream& stream) override;
+    QString getType() const override { return "Line"; }
+
     void setEndPoint(const QPoint& endPoint, const QRect& bounds);
     QPoint getEndPoint() const { return m_endPoint; }
 
-    // Переопределяем move для перемещения всей линии
     void move(int dx, int dy, const QRect& bounds) override;
 
 private:

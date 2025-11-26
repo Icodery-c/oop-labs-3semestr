@@ -70,3 +70,18 @@ QPolygon Triangle::getPolygon() const
             << QPoint(m_position.x() + m_size/2, m_position.y() + m_size/2);
     return polygon;
 }
+
+// Сериализация треугольника
+void Triangle::save(QTextStream& stream) const
+{
+    stream << getType() << " ";
+    saveCommonProperties(stream);
+    stream << m_size << "\n";
+}
+
+// Десериализация треугольника
+void Triangle::load(QTextStream& stream)
+{
+    loadCommonProperties(stream);
+    stream >> m_size;
+}

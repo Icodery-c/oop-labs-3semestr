@@ -118,3 +118,20 @@ double Line::distanceToLine(const QPoint& point) const
 
     return std::sqrt((x0 - closestX) * (x0 - closestX) + (y0 - closestY) * (y0 - closestY));
 }
+
+// Сериализация линии
+void Line::save(QTextStream& stream) const
+{
+    stream << getType() << " ";
+    saveCommonProperties(stream);
+    stream << m_endPoint.x() << " " << m_endPoint.y() << "\n";
+}
+
+// Десериализация линии
+void Line::load(QTextStream& stream)
+{
+    loadCommonProperties(stream);
+    int endX, endY;
+    stream >> endX >> endY;
+    m_endPoint = QPoint(endX, endY);
+}

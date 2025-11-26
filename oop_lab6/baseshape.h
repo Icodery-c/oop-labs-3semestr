@@ -1,37 +1,43 @@
 #pragma once
 
-
 #include <QPainter>
 #include <QRect>
 #include <QColor>
+#include <QTextStream>
 
 class BaseShape
 {
 protected:
-    QPoint m_position;      // Позиция фигуры
-    QColor m_color;         // Цвет заливки
-    QColor m_borderColor;   // Цвет границы
-    bool m_selected;        // Выделена ли фигура
-    int m_borderWidth;      // Толщина границы
+    QPoint m_position;
+    QColor m_color;
+    QColor m_borderColor;
+    bool m_selected;
+    int m_borderWidth;
 
 public:
     BaseShape(const QPoint& position, const QColor& color = Qt::blue);
     virtual ~BaseShape() = default;
 
-    // Виртуальные методы (должны быть реализованы в наследниках)
+    // Виртуальные методы
     virtual void draw(QPainter& painter) const = 0;
     virtual bool contains(const QPoint& point) const = 0;
     virtual QRect getBoundingRect() const = 0;
+    virtual QRect getBoundsAfterResize(int dw, int dh) const = 0;
     virtual QString getName() const = 0;
 
-    // Общие методы (реализация в базовом классе)
+    // Сериализация
+    virtual void save(QTextStream& stream) const = 0;
+    virtual void load(QTextStream& stream) = 0;
+    virtual QString getType() const = 0;
+
+    // Общие методы - ДЕЛАЕМ ВИРТУАЛЬНЫМИ
     virtual void move(int dx, int dy, const QRect& bounds);
     virtual bool canMove(int dx, int dy, const QRect& bounds) const;
     virtual bool canResize(int dw, int dh, const QRect& bounds) const;
     void setPosition(const QPoint& newPosition);
-    void setColor(const QColor& color);
+    virtual void setColor(const QColor& color);  // ← ДЕЛАЕМ ВИРТУАЛЬНЫМ
     void setBorderColor(const QColor& color);
-    void setSelected(bool selected);
+    virtual void setSelected(bool selected);     // ← ДЕЛАЕМ ВИРТУАЛЬНЫМ
 
     // Геттеры
     QPoint getPosition() const { return m_position; }
@@ -42,9 +48,11 @@ public:
     // Проверка границ
     bool isWithinBounds(const QRect& bounds) const;
     QRect getBoundsAfterMove(int dx, int dy) const;
-    virtual QRect getBoundsAfterResize(int dw, int dh) const = 0;
 
 protected:
-    // Вспомогательные методы для наследников
     void drawSelectionHighlight(QPainter& painter, const QRect& rect) const;
+
+    // Вспомогательные методы для сериализации
+    void saveCommonProperties(QTextStream& stream) const;
+    void loadCommonProperties(QTextStream& stream);
 };

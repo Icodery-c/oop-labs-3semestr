@@ -17,6 +17,11 @@ public:
     QRect getBoundsAfterResize(int dw, int dh) const override;
     QString getName() const override { return "Circle"; }
 
+    // Сериализация
+    void save(QTextStream& stream) const override;
+    void load(QTextStream& stream) override;
+    QString getType() const override { return "Circle"; }
+
     // Специфичные методы для круга
     void setRadius(int radius, const QRect& bounds);
     int getRadius() const { return m_radius; }

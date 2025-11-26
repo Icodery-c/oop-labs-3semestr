@@ -2,11 +2,12 @@
 #include <QPainter>
 #include <QMouseEvent>
 #include <QKeyEvent>
+#include <QDebug>
 #include "circle.h"
 #include "rectangle.h"
 #include "triangle.h"
 #include "line.h"
-#include <QDebug>
+#include "shapefactory.h"
 
 ShapeWidget::ShapeWidget(QWidget *parent)
     : QWidget(parent)
@@ -15,6 +16,12 @@ ShapeWidget::ShapeWidget(QWidget *parent)
     setFocusPolicy(Qt::StrongFocus);
     setMinimumSize(600, 500);
     setMouseTracking(true);
+
+    // Устанавливаем фабрику по умолчанию
+    m_storage.setFactory(new TextShapeFactory());
+
+    // Проверяем, что фабрика установлена
+    qDebug() << "ShapeWidget: Factory set for storage";
 }
 
 void ShapeWidget::setCurrentTool(Tool tool)

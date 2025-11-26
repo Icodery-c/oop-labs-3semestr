@@ -43,16 +43,17 @@ void BaseShape::setColor(const QColor& color)
     qDebug() << getName() << "color changed to:" << getColorName();
 }
 
-void BaseShape::setBorderColor(const QColor& color)
-{
-    m_borderColor = color;
-}
-
 void BaseShape::setSelected(bool selected)
 {
     m_selected = selected;
     qDebug() << getName() << "selection:" << (selected ? "selected" : "deselected");
 }
+
+void BaseShape::setBorderColor(const QColor& color)
+{
+    m_borderColor = color;
+}
+
 
 QString BaseShape::getColorName() const
 {
@@ -81,4 +82,29 @@ void BaseShape::drawSelectionHighlight(QPainter& painter, const QRect& rect) con
         painter.drawRect(rect.adjusted(-2, -2, 2, 2));
         painter.restore();
     }
+}
+
+// Сохранение общих свойств всех фигур
+void BaseShape::saveCommonProperties(QTextStream& stream) const
+{
+    stream << m_position.x() << " " << m_position.y() << " ";
+    stream << m_color.name() << " " << m_borderColor.name() << " ";
+    stream << (m_selected ? 1 : 0) << " " << m_borderWidth << " ";  // bool → int
+}
+
+// Загрузка общих свойств всех фигур
+void BaseShape::loadCommonProperties(QTextStream& stream)
+{
+    int x, y;
+    QString colorName, borderColorName;
+    int selectedInt;  // int вместо bool
+    int borderWidth;
+
+    stream >> x >> y >> colorName >> borderColorName >> selectedInt >> borderWidth;
+
+    m_position = QPoint(x, y);
+    m_color = QColor(colorName);
+    m_borderColor = QColor(borderColorName);
+    m_selected = (selectedInt != 0);  // int → bool
+    m_borderWidth = borderWidth;
 }

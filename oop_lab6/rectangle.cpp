@@ -48,7 +48,7 @@ void Rectangle::setSize(const QSize& size, const QRect& bounds)
     if (size.width() > 0 && size.height() > 0) {
         int dw = size.width() - m_size.width();
         int dh = size.height() - m_size.height();
-        
+
         if (canResize(dw, dh, bounds)) {
             m_size = size;
             qDebug() << "Rectangle size changed to:" << size;
@@ -61,4 +61,20 @@ void Rectangle::setSize(const QSize& size, const QRect& bounds)
 QRect Rectangle::getRect() const
 {
     return QRect(m_position, m_size);
+}
+
+void Rectangle::save(QTextStream& stream) const
+{
+    stream << getType() << " ";
+    saveCommonProperties(stream);
+    stream << m_size.width() << " " << m_size.height() << "\n";
+}
+
+// Десериализация прямоугольника
+void Rectangle::load(QTextStream& stream)
+{
+    loadCommonProperties(stream);
+    int width, height;
+    stream >> width >> height;
+    m_size = QSize(width, height);
 }
