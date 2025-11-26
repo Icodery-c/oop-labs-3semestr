@@ -9,19 +9,23 @@ class NumberModel : public QObject
 
 private:
     int m_A, m_B, m_C;
+    bool m_isChanging;
+    int m_updateCount;
 
 public:
     explicit NumberModel(QObject *parent = nullptr);
 
     // Геттеры
-    int getA() const;
-    int getB() const;
-    int getC() const;
+    int getA() const { return m_A; }
+    int getB() const { return m_B; }
+    int getC() const { return m_C; }
 
-    // Сеттеры с разным поведением
-    void setA(int value);  // Разрешающее поведение
-    void setB(int value);  // Запрещающее поведение
-    void setC(int value);  // Разрешающее поведение
+    // Сеттеры
+    void setA(int value);
+    void setB(int value);
+    void setC(int value);
+
+    int getUpdateCount() const { return m_updateCount; }
 
 signals:
     void dataChanged();
@@ -30,4 +34,6 @@ private:
     void enforceConstraints();
     void saveToSettings();
     void loadFromSettings();
+    bool isValidValue(int value) const;
+    void setValuesAtomic(int a, int b, int c);
 };

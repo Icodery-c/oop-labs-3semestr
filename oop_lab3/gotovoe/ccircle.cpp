@@ -11,6 +11,7 @@ void CCircle::draw(QPainter &painter) const
     painter.setRenderHint(QPainter::Antialiasing, true);
     if (selected) {
         painter.setBrush(QBrush(Qt::yellow)); // выделенные — жёлтые
+
         painter.setPen(QPen(Qt::red, 2));
     } else {
         painter.setBrush(QBrush(Qt::blue));

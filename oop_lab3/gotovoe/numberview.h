@@ -32,6 +32,7 @@ private slots:
     void onSliderChanged(int value);
 
 private:
+    void updateAllControls(int value);
     void applyValueToModel(int value);
 };
 
@@ -42,7 +43,11 @@ class NumberView : public QWidget
 private:
     NumberModel *m_model;
     SingleNumberView *m_viewA, *m_viewB, *m_viewC;
+    QLabel *m_debugLabel;
 
 public:
     explicit NumberView(NumberModel *model, QWidget *parent = nullptr);
+
+private slots:
+    void onModelChanged();
 };

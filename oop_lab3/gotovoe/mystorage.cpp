@@ -1,5 +1,15 @@
 #include "mystorage.h"
 
+std::vector<CCircle*> MyStorage::getAllCirclesAt(int x, int y) {
+    std::vector<CCircle*> result;
+    for (auto& circle : circles) {
+        if (circle.contains(x, y)) {
+            result.push_back(&circle);
+        }
+    }
+    return result;
+}
+
 void MyStorage::add(const CCircle &circle)
 {
     circles.push_back(circle);

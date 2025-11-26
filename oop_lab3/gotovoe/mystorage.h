@@ -13,6 +13,7 @@ public:
     void drawAll(QPainter &painter) const;
     void deselectAll();
     CCircle* getCircleAt(int x, int y);
+    std::vector<CCircle*> getAllCirclesAt(int x, int y);
     void removeSelected();
     int size() const;
 };

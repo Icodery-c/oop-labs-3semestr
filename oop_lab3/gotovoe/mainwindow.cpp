@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 //#include "ui_mainwindow.h"
 #include <QPainter>
-
 #include <QWheelEvent>
 
 void MainWindow::wheelEvent(QWheelEvent *event)
@@ -14,10 +13,10 @@ void MainWindow::wheelEvent(QWheelEvent *event)
     CCircle* circle = storage.getCircleAt(x, y);
     if (circle) {
         // Определяем направление прокрутки
-        int delta = event->angleDelta().y() / 120; // 1 шаг колеса = 120
-        double newRadius = circle->getRadius() + delta * 5.0; // шаг 5 пикселей
-        if (newRadius < 5) newRadius = 5;       // минимальный размер
-        if (newRadius > 200) newRadius = 200;   // максимальный размер
+        int delta = event->angleDelta().y() / 120;
+        double newRadius = circle->getRadius() + delta * 5.0;
+        if (newRadius < 5) newRadius = 5;
+        if (newRadius > 200) newRadius = 200;
         circle->setRadius(newRadius);
         update();
     }
@@ -45,18 +44,44 @@ void MainWindow::paintEvent(QPaintEvent *)
 
 void MainWindow::mousePressEvent(QMouseEvent *event)
 {
+    // bool ctrlPressed = event->modifiers() & Qt::ControlModifier;
+    // bool leftClick = event->button() == Qt::LeftButton;
+    //
+    // if (leftClick)
+    // {
+    //     CCircle *circle = storage.getCircleAt(event->x(), event->y());
+    //
+    //     if (circle)
+    //     {
+    //         if (!ctrlPressed)
+    //             storage.deselectAll();
+    //         circle->setSelected(!circle->isSelected());
+    //     }
+    //     else
+    //     {
+    //         if (!ctrlPressed)
+    //             storage.deselectAll();
+    //         storage.add(CCircle(event->x(), event->y()));
+    //     }
+    //     update();
+    // }
+
+
     bool ctrlPressed = event->modifiers() & Qt::ControlModifier;
     bool leftClick = event->button() == Qt::LeftButton;
 
     if (leftClick)
     {
-        CCircle *circle = storage.getCircleAt(event->x(), event->y());
+        auto circlesUnderCursor = storage.getAllCirclesAt(event->x(), event->y());
 
-        if (circle)
+        if (!circlesUnderCursor.empty())
         {
             if (!ctrlPressed)
                 storage.deselectAll();
-            circle->setSelected(!circle->isSelected());
+
+            for (CCircle* circle : circlesUnderCursor) {
+                circle->setSelected(!circle->isSelected());
+            }
         }
         else
         {
@@ -66,6 +91,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
         }
         update();
     }
+
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)

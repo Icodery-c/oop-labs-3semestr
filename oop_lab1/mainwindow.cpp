@@ -1,5 +1,4 @@
 #include "mainwindow.h"
-//#include "ui_mainwindow.h"
 #include <QVBoxLayout>
 #include <QMouseEvent>
 #include <QKeyEvent>
@@ -89,19 +88,41 @@ void MainWindow::onTimerTick()
 
 void MainWindow::mousePressEvent(QMouseEvent *event)
 {
+    // Создаем динамическую кнопку
     QPushButton *newButton = new QPushButton("Dynamic", this);
     newButton->move(event->pos());
     newButton->show();
+
+    // Добавляем кнопку в список для отслеживания
+    dynamicButtons.append(newButton);
+
+    // Подключаем сигнал клика - первый клик меняет текст, второй удаляет
     connect(newButton, &QPushButton::clicked, [this, newButton](){
-        infoLabel->setText("Создана динамическая кнопка!");
-        newButton->setText("OK");
+        if (newButton->text() == "Dynamic") {
+            // Первый клик - меняем текст
+            newButton->setText("Удалить");
+            infoLabel->setText("Создана динамическая кнопка! Нажмите еще раз для удаления.");
+        } else {
+            // Второй клик - удаляем кнопку
+            dynamicButtons.removeOne(newButton);
+            newButton->deleteLater();
+            infoLabel->setText("Динамическая кнопка удалена!");
+        }
     });
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
+    QString keyName = QKeySequence(event->key()).toString();
+    infoLabel->setText("Нажата клавиша: " + keyName);
+
     if (event->key() == Qt::Key_Space)
         infoLabel->setText("Нажата клавиша ПРОБЕЛ");
+
+    // Удаление всех динамических кнопок при нажатии Delete
+    if (event->key() == Qt::Key_Delete) {
+        removeAllDynamicButtons();
+    }
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
@@ -115,4 +136,14 @@ void MainWindow::openAboutWindow()
 {
     aboutWin = new AboutWindow(this);
     aboutWin->show();
+}
+
+void MainWindow::removeAllDynamicButtons()
+{
+    // Удаляем все динамические кнопки
+    for (QPushButton *button : dynamicButtons) {
+        button->deleteLater();
+    }
+    dynamicButtons.clear();
+    infoLabel->setText("Все динамические кнопки удалены!");
 }
